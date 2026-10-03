@@ -1340,7 +1340,16 @@ namespace NzbDrone.Core.MediaFiles.BookImport
 
                             if (!copyOnly)
                             {
-                                _diskProvider.DeleteFile(source);
+                                // Calibre now holds the book. Failing the import here would leave it
+                                // untracked and a retry would add it to Calibre a second time.
+                                try
+                                {
+                                    _diskProvider.DeleteFile(source);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.Warn(ex, "[CALIBRE-IMPORT] Added to Calibre but could not remove source file: {0}", source);
+                                }
                             }
                         }
                         else if (copyOnly)
